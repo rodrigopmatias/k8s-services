@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: registry
+spec:
+  selector:
+    matchLabels:
+      app: registry
+  serviceName: "registry"
+  template:
+    metadata:
+      labels:
+        app: registry
+    spec:
+      volumes:
+        - name: registry-password
+          secret:
+            secretName: registry-secrets
+            items:
+              - key: password.txt
+                path: registry-password.txt
+        - name: registry-data
+          persistentVolumeClaim:
+            claimName: registry-pvc
+      containers:
+      - image: registry:2
+        name: registry
+        envFrom:
+          - configMapRef:
+              name: registry-configmap
+        volumeMounts:
+          - mountPath: /etc/secrets
+            name: registry-password
+            readOnly: true
+          - mountPath: /var/lib/registry
+            name: registry-data
+        ports:
+        - containerPort: 5000
+          name: http
+          protocol: TCP
+        resources: 
+          limits:
+            cpu: "100m"
+            memory: "128M"

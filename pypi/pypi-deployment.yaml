@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pypi
+  name: pypi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pypi
+  template:
+    metadata:
+      labels:
+        app: pypi
+    spec:
+      volumes:
+        - name: secrets
+          secret:
+            secretName: pypi-secrets
+            items:
+              - key: password.txt
+                mode: 0600
+                path: password.txt
+        - name: "packages"
+          persistentVolumeClaim:
+            claimName: pypi-pvc
+      containers:
+      - image: pypiserver/pypiserver:latest
+        name: service
+        command:
+          - "pypi-server"
+        args:
+          - "run"
+          - "-p"
+          - "8000"
+          - "-a"
+          - "update,download"
+          - "-P"
+          - "/etc/secrets/password.txt"
+          - "--hash-algo"
+          - "sha256"
+          - "/packages"
+        volumeMounts:
+          - mountPath: "/packages"
+            name: "packages"
+          - mountPath: "/etc/secrets"
+            name: secrets
+            readOnly: true
+        ports:
+        - containerPort: 8000
+          name: http
+        resources:
+          limits:
+            cpu: "100m"
+            memory: "64M"

@@ -1,0 +1,61 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fix-dns
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          volumes:
+            - name: fix-config
+              configMap:
+                name: fix-configmap
+                items:
+                  - key: fix.conf
+                    path: fix.conf
+            - name: rootfs
+              hostPath:
+                path: /
+          containers:
+          - name: fixer
+            image: alpine/k8s:1.22.15
+            volumeMounts:
+              - mountPath: /rootfs
+                name: rootfs
+              - mountPath: /etc/fixer
+                name: fix-config
+            envFrom:
+              - configMapRef:
+                  name: fix-configmap
+            command:
+              - "/bin/bash"
+            args: 
+              - '-c'
+              - |
+                mkdir ~/.kube
+                sed -e "s/127.0.0.1/${IP_VIP}/" /rootfs/etc/rancher/k3s/k3s.yaml > ~/.kube/config
+                cat /rootfs/etc/hosts >> /etc/hosts
+
+                if [ ! -f "/rootfs/etc/hosts.1" ]; then
+                  cat /rootfs/etc/hosts > /rootfs/etc/hosts.1
+                fi 
+                
+                cat /rootfs/etc/hosts.1 > /rootfs/etc/hosts
+
+                for RECORD in $(cat /etc/fixer/fix.conf) 
+                do 
+                  NAMESPACE=$(echo $RECORD | awk -F ':' '{print $1}')
+                  SERVICE=$(echo $RECORD | awk -F ':' '{print $2}')
+                  DNS_NAME=$(echo $RECORD | awk -F ':' '{print $3}')
+
+                  echo "Request service IP for ${NAMESPACE}/${SERVICE}"
+                  SERVICE_IP=$(kubectl get -n ${NAMESPACE} service ${SERVICE} --request-timeout=5s --output jsonpath='{$.spec.clusterIP}' 2>/dev/null)
+                  if [ "$SERVICE_IP" != "" ]; then
+                    echo -e "${SERVICE_IP}\t${DNS_NAME}" >> /rootfs/etc/hosts
+                  else
+                    echo "cant configure ${SERVICE}.${NAMESPACE}, not found on cluster"
+                  fi
+                done
+          restartPolicy: OnFailure
