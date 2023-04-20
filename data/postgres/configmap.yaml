@@ -1,7 +1,6 @@
 apiVersion: v1
 data:
-  POSTGRES_USER: data
+  POSTGRES_USER: joe
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   name: postgres-configmap
