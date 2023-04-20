@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: rabbit
+  name: rabbit
+spec:
+  ports:
+  - name: "amqp"
+    port: 5672
+    protocol: TCP
+    targetPort: 5672
+  - name: "management"
+    port: 15672
+    protocol: TCP
+  - name: "metrics"
+    port: 15692
+    protocol: TCP
+    targetPort: 15692
+  - name: "stomp"
+    port: 61613
+    protocol: TCP
+    targetPort: 61613
+  selector:
+    app: rabbit
+  type: LoadBalancer

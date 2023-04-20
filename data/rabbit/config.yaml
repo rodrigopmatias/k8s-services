@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  RABBITMQ_DEFAULT_USER: admin
+  RABBITMQ_DEFAULT_VHOST: default
+  RABBITMQ_NODENAME: mq@rabbit
+  enabled_plugins: "[rabbitmq_management,rabbitmq_prometheus,rabbitmq_stomp]."
+kind: ConfigMap
+metadata:
+  name: rabbit-configmap

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mongo
+  name: mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mongo-pvc
+      containers:
+      - image: mongo:6.0
+        name: mongo
+        volumeMounts:
+          - mountPath: /data/db
+            name: data
+        envFrom:
+          - secretRef:
+              name: mongo-secrets
+          - configMapRef:
+              name: mongo-configmap
+        ports:
+        - name: mongo
+          containerPort: 27017
+          protocol: TCP
+        resources: 
+          limits:
+            cpu: "100m"
+            memory: "512Mi"

@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rabbit
+  name: rabbit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbit
+  template:
+    metadata:
+      labels:
+        app: rabbit
+    spec:
+      hostAliases:
+        - ip: "127.0.0.1"
+          hostnames:
+            - "rabbit"
+      volumes:
+        - name: plugins
+          configMap:
+            name: rabbit-configmap
+            items:
+              - key: "enabled_plugins"
+                path: "enabled_plugins"
+        - name: storage
+          persistentVolumeClaim:
+            claimName: rabbit-pvc
+      containers:
+        - image: rabbitmq:3-management
+          name: rabbitmq
+          volumeMounts:
+            - mountPath: /etc/rabbitmq/enabled_plugins
+              name: plugins
+              subPath: enabled_plugins
+            - mountPath: /var/lib/rabbitmq/mnesia/
+              name: storage
+          envFrom:
+            - configMapRef:
+                name: rabbit-configmap
+            - secretRef:
+                name: rabbit-secrets
+          ports:
+            - name: "management"
+              containerPort: 15672
+            - name: "metrics"
+              containerPort: 15692
+            - name: "amqp"
+              containerPort: 5672
+            - name: "stomp"
+              containerPort: 61613
+          resources:
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
