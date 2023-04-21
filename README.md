@@ -1,79 +1,27 @@
-## Implementando PostgreSQL
+## Pacote de Serviços que uso no meu dia-a-dia como Developer
 
-Antes de realizarmos o deploy deste item, precisamos ter o `registry` funcionando uma vez que a imagem do postgres será buscada neste, veja [Implementando registry](#implementado-o-registry) iremos precisar do usuário e senha para podemos fazer o upload da imagem e depoiis gerar o arquivo registry-secrets.yaml que é necessário para conseguirmos acessar as imagens no nosso registry privado.
+Ao longo do tempo passe a acumular algum serviços que uso no meu dia a dia como develop, serviços básicos como database, mensageria entre outros que me ajuda a desenvolver sem precisar de infraestrutura externa, são eles até o monento:
 
-O usuário do postgres que será criado pode ser verificado no arquivo configmap, por padrão será o usuário `joe` você pode modificar para o valor que deseja, mas, isto precisa ser feito antes do primeiro deploy, a senha padrão é uma senha fraca, você também pode modificar este valor antes do primeiro deploy, caso tenha esquecido de fazer isto o postgreSQL conta com ferramentas que podem te auxiliar, para isto deve consultar documentação do PostgreSQL.
+1. PostgreSQL
+1. RabbitMQ
+1. Redis
+1. Docker Registry
+1. PyPi (package registry for Python)
 
-O deploy é bem simples, basta executar o seguinte comando:
+O que pode soar como extranho é a implementação do PyPi, este eu uso para desenvolvimento de projetos pessoais que tenho pacotes privados meus.
 
-```
-$ kubectl apply -n data -f data/postgres
-configmap/postgres-configmap created
-deployment.apps/postgres created
-persistentvolumeclaim/postgres-pvc created
-secret/postgres-secrets created
-service/postgres created
-```
+Para seguirmos com a implementação dos serviços sugiro a seguinte ordem:
 
-Este serviço é executado como LoadBalancer logo ele possui um IP externo que pode ser verificado com o seguinte comando:
+1. [Implementando o Regitry](#implementado-o-registry)
+1. [Implementando o PyPI Server](#implementando-o-pypi-server)
+1. [Implementando os fixes](#implementado-os-fixes)
+1. [Implementando o Redis](#implementado-redis)
+1. [Implementando o PostgreSQL](#implementando-postgresql)
+1. [Implementnando o RabbitMQ](#implementando-o-rabbitmq)
 
-```
-$ kubectl get svc -n data postgres
-NAME       TYPE           CLUSTER-IP    EXTERNAL-IP       PORT(S)          AGE
-postgres   LoadBalancer   10.43.71.43   192.168.101.210   5432:30110/TCP   68s
-```
+Necessáriamente os 3 primeiros são importantes para o sucesso, após eles os demais podem ser inclusive omitidos ou substituidos pelos de sua preferencia.
 
-No meu caso foi o IP `192.168.101.210` a porta `5432`.
-
-
-## Implementado Redis
-
-Assim como [Implementando PostgreSQL](#implementando-postgresql) iremos precisar do `registry` funcionando.
-
-A implementação de Redis é uma simples implementação para ambiente de desenvolvimento, não contando com replicação nem com autenticação, mesmo que isto sejá facil de implementar, mas para implementar o Redis basta executar o seguinte comando:
-
-```
-$ kubectl apply -n data -f data/redis
-deployment.apps/redis created
-service/redis created
-```
-
-Para ter acesso execute este comando:
-
-```
-$ kubectl get svc -n data redis
-NAME    TYPE           CLUSTER-IP    EXTERNAL-IP       PORT(S)          AGE
-redis   LoadBalancer   10.43.91.59   192.168.101.210   6379:32326/TCP   29s
-```
-
-Sendo assim podemos acessar este redis da maquina de desenvolvimento com a seguinte URL `redis://192.168.101.210:6379/1`.
-
-## Implementando o serviço RabbitMQ
-
-Neste deploy temos configurados alguns plugins e persistencia de dados para que ao reiniciar o Pod não seja perdida configurações de topicos e queues nem mesmo de acesso.
-
-Podemos implementar o serviço com o simples comando:
-
-```shell
-$ kubectl apply -n data -f data/rabbit
-configmap/rabbit-configmap created
-deployment.apps/rabbit created
-persistentvolumeclaim/rabbit-pvc created
-secret/rabbit-secrets created
-service/rabbit created
-```
-
-Lembando que o serviço será iniciao com um usuário `admin` que possue uma senha muito fraca, você pode alterar esta senha antes do deploy no arquivo `secrets.yaml` ou depois atraves do painel e administração que ficará disponível no endereço `http://ip-do-k8s:15672/`. Este IP também pode ser descober com o seguinte comando:
-
-```shell
-$ kubectl get svc -n data rabbit
-NAME     TYPE           CLUSTER-IP   EXTERNAL-IP       PORT(S)                                                          AGE
-rabbit   LoadBalancer   10.43.5.57   192.168.101.210   5672:31243/TCP,15672:31194/TCP,15692:31943/TCP,61613:32328/TCP   2m46s
-```
-
-Devemos observar o valor do `EXTERNAL-IP` que no meu caso é `192.168.101.210` veja como será o seu e substitua.
-
-## Implementado o registry
+## Implementado o Registry
 
 Você irá precisar de um docker para poder rodar o comando `htpasswd` você pode procurar outra alternativa, mas para gerar o nosso arquivo de autenticação iremos rodar o seguind comando:
 
@@ -173,7 +121,7 @@ NAME                              DESIRED   CURRENT   READY   AGE
 replicaset.apps/pypi-79669cfd74   1         1         1       117s
 ```
 
-## Implementado os fix
+## Implementado os fixes
 
 Atualmente temos apenas um fix que irá criar entradas de DNS a nivel de host para que seja possivel o kubernetes interagir com algums serviços internos de forma mais simples.
 
@@ -190,3 +138,77 @@ infra-registry:registry:registry.internal
 ```
 
 Neste caso o serviço `registry` esta presente no namespace `infra-registry` e será registrado om o nome `registry.internal`.
+
+## Implementado Redis
+
+Assim como [Implementando PostgreSQL](#implementando-postgresql) iremos precisar do `registry` funcionando.
+
+A implementação de Redis é uma simples implementação para ambiente de desenvolvimento, não contando com replicação nem com autenticação, mesmo que isto sejá facil de implementar, mas para implementar o Redis basta executar o seguinte comando:
+
+```
+$ kubectl apply -n data -f data/redis
+deployment.apps/redis created
+service/redis created
+```
+
+Para ter acesso execute este comando:
+
+```
+$ kubectl get svc -n data redis
+NAME    TYPE           CLUSTER-IP    EXTERNAL-IP       PORT(S)          AGE
+redis   LoadBalancer   10.43.91.59   192.168.101.210   6379:32326/TCP   29s
+```
+
+Sendo assim podemos acessar este redis da maquina de desenvolvimento com a seguinte URL `redis://192.168.101.210:6379/1`.
+
+## Implementando PostgreSQL
+
+Antes de realizarmos o deploy deste item, precisamos ter o `registry` funcionando uma vez que a imagem do postgres será buscada neste, veja [Implementando registry](#implementado-o-registry) iremos precisar do usuário e senha para podemos fazer o upload da imagem e depoiis gerar o arquivo registry-secrets.yaml que é necessário para conseguirmos acessar as imagens no nosso registry privado.
+
+O usuário do postgres que será criado pode ser verificado no arquivo configmap, por padrão será o usuário `joe` você pode modificar para o valor que deseja, mas, isto precisa ser feito antes do primeiro deploy, a senha padrão é uma senha fraca, você também pode modificar este valor antes do primeiro deploy, caso tenha esquecido de fazer isto o postgreSQL conta com ferramentas que podem te auxiliar, para isto deve consultar documentação do PostgreSQL.
+
+O deploy é bem simples, basta executar o seguinte comando:
+
+```
+$ kubectl apply -n data -f data/postgres
+configmap/postgres-configmap created
+deployment.apps/postgres created
+persistentvolumeclaim/postgres-pvc created
+secret/postgres-secrets created
+service/postgres created
+```
+
+Este serviço é executado como LoadBalancer logo ele possui um IP externo que pode ser verificado com o seguinte comando:
+
+```
+$ kubectl get svc -n data postgres
+NAME       TYPE           CLUSTER-IP    EXTERNAL-IP       PORT(S)          AGE
+postgres   LoadBalancer   10.43.71.43   192.168.101.210   5432:30110/TCP   68s
+```
+
+No meu caso foi o IP `192.168.101.210` a porta `5432`.
+
+## Implementando o RabbitMQ
+
+Neste deploy temos configurados alguns plugins e persistencia de dados para que ao reiniciar o Pod não seja perdida configurações de topicos e queues nem mesmo de acesso.
+
+Podemos implementar o serviço com o simples comando:
+
+```shell
+$ kubectl apply -n data -f data/rabbit
+configmap/rabbit-configmap created
+deployment.apps/rabbit created
+persistentvolumeclaim/rabbit-pvc created
+secret/rabbit-secrets created
+service/rabbit created
+```
+
+Lembando que o serviço será iniciao com um usuário `admin` que possue uma senha muito fraca, você pode alterar esta senha antes do deploy no arquivo `secrets.yaml` ou depois atraves do painel e administração que ficará disponível no endereço `http://ip-do-k8s:15672/`. Este IP também pode ser descober com o seguinte comando:
+
+```shell
+$ kubectl get svc -n data rabbit
+NAME     TYPE           CLUSTER-IP   EXTERNAL-IP       PORT(S)                                                          AGE
+rabbit   LoadBalancer   10.43.5.57   192.168.101.210   5672:31243/TCP,15672:31194/TCP,15692:31943/TCP,61613:32328/TCP   2m46s
+```
+
+Devemos observar o valor do `EXTERNAL-IP` que no meu caso é `192.168.101.210` veja como será o seu e substitua.
