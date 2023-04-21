@@ -41,7 +41,10 @@ Esta ultima linha corresponde a entrada que iremos adicionar no arquivo `passwor
 Agora vamos criar o arquivo de secrets, onde iremos inserir o conteudo do password.txt em uma entrada que será usada pelo registry para buscar informações de usuários veja o comando:
 
 ```shell
-kubectl create secret generic registry-secrets --from-file password.txt=registry/password.txt --dry-run=client --output=yaml > registry/registry-secrets.yaml
+kubectl create secret generic registry-secrets \
+  --from-file password.txt=registry/password.txt \
+  --dry-run=client \
+  --output=yaml > registry/registry-secrets.yaml
 ```
 
 Este comando irá gerar o arquivo `registry-secrets.yaml` dentro do diretório `registry` e agora pode aplicar o deploy com o seguinte comando:
@@ -72,7 +75,12 @@ statefulset.apps/registry   1/1     4m35s
 Quando precisarmos acessar imagens no registry iremos sempre precisar informar as credenciais de acesso para o mesmo, para isto iremos criar um arquivo que devemos deixar em um local seguro para isto, veja o comando:
 
 ```
-kubectl create secret docker-registry registry-secrets --docker-username my-user --docker-password my-password --docker-server registry.internal:5000 --dry-run=client --output=yaml > registry-secrets.yaml
+kubectl create secret docker-registry registry-secrets \
+  --docker-username my-user \
+  --docker-password my-password \
+  --docker-server registry.internal:5000 \
+  --dry-run=client \
+  --output=yaml > registry-secrets.yaml
 ```
 
 Desta forma será criado um arquivo `registry-secrets.yaml` onde temos a configuração do docker para acessar o nosso registry.
@@ -109,7 +117,10 @@ Esta ultima linha corresponde a entrada que iremos adicionar no arquivo `passwor
 Agora vamos criar o arquivo de secrets, onde iremos inserir o conteudo do password.txt em uma entrada que será usada pelo registry para buscar informações de usuários veja o comando:
 
 ```shell
-kubectl create secret generic pypi-secrets --from-file password.txt=pypi/password.txt --dry-run=client --output=yaml > pypi/pypi-secrets.yaml
+kubectl create secret generic pypi-secrets \
+  --from-file password.txt=pypi/password.txt \
+  --dry-run=client \
+  --output=yaml > pypi/pypi-secrets.yaml
 ```
 
 Este comando irá gerar o arquivo `pypi-secrets.yaml` dentro do diretório `pypi` e agora pode aplicar o deploy com o seguinte comando:
