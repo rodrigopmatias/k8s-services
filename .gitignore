@@ -1,4 +1,5 @@
 pypi/passwd.txt
+pypi/password.txt
 pypi/pypi-secrets.yaml
 registry/password.txt
 registry/registry-secrets.yaml
