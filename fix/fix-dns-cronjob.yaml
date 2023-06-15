@@ -50,11 +50,13 @@ spec:
                   SERVICE=$(echo $RECORD | awk -F ':' '{print $2}')
                   DNS_NAME=$(echo $RECORD | awk -F ':' '{print $3}')
 
-                  echo "Request service IP for ${NAMESPACE}/${SERVICE}"
+                  echo -n "Request service IP for ${NAMESPACE}/${SERVICE} "
                   SERVICE_IP=$(kubectl get -n ${NAMESPACE} service ${SERVICE} --request-timeout=5s --output jsonpath='{$.spec.clusterIP}' 2>/dev/null)
                   if [ "$SERVICE_IP" != "" ]; then
+                    echo "found ${SERVICE_IP}"
                     echo -e "${SERVICE_IP}\t${DNS_NAME}" >> /rootfs/etc/hosts
                   else
+                    echo "not found"
                     echo "cant configure ${SERVICE}.${NAMESPACE}, not found on cluster"
                   fi
                 done
