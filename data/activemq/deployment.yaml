@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: activemq
+  name: activemq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: activemq
+  template:
+    metadata:
+      labels:
+        app: activemq
+    spec:
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: activemq-pvc
+      imagePullSecrets:
+        - name: registry-secrets
+      containers:
+        - image: registry.internal:5000/activemq:2.28.0
+          name: service
+          volumeMounts:
+            - mountPath: /var/lib/activemq-instance
+              name: data
+          ports:
+            - containerPort: 8161
+              name: "console"
+              protocol: TCP
+            - containerPort: 61613
+              name: "stomp"
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: activemq-secrets
+            - configMapRef:
+                name: activemq-configmap
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

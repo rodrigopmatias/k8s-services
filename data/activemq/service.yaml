@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: activemq
+  name: activemq
+spec:
+  ports:
+  - name: "console"
+    port: 8161
+    protocol: TCP
+    targetPort: 8161
+  - name: "stomp"
+    port: 61614
+    protocol: TCP
+    targetPort: 61613
+  selector:
+    app: activemq
+  type: LoadBalancer
