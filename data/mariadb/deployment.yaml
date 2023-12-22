@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+spec:
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mariadb-pvc
+      containers:
+      - name: database
+        image: mariadb:lts
+        envFrom:
+          - secretRef:
+              name: mariadb-secrets
+          - configMapRef:
+              name: mariadb-configmap
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "300m"
+        ports:
+        - containerPort: 3306
+          name: database
+          protocol: TCP
