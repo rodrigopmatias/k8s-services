@@ -12,22 +12,49 @@ spec:
         app: mariadb
     spec:
       volumes:
+        - name: customize
+          configMap:
+            name: customize
         - name: data
           persistentVolumeClaim:
             claimName: mariadb-pvc
       containers:
-      - name: database
-        image: mariadb:lts
-        envFrom:
-          - secretRef:
-              name: mariadb-secrets
-          - configMapRef:
-              name: mariadb-configmap
-        resources:
-          limits:
-            memory: "512Mi"
-            cpu: "300m"
-        ports:
-        - containerPort: 3306
-          name: database
-          protocol: TCP
+        - name: database
+          image: mariadb:lts
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: data
+            - mountPath: /docker-entrypoint-initdb.d
+              name: customize
+          envFrom:
+            - secretRef:
+                name: mariadb-secrets
+            - configMapRef:
+                name: mariadb-configmap
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "300m"
+          ports:
+            - containerPort: 3306
+              name: database
+              protocol: TCP
+        - name: exporter
+          image: prom/mysqld-exporter:main
+          args:
+            - "--mysqld.address"
+            - "localhost:3306"
+            - "--mysqld.username"
+            - "exporter"
+          env:
+            - name: MYSQLD_EXPORTER_PASSWORD
+              value: secr3t
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+          ports:
+            - containerPort: 9104
+              name: exporter
+              protocol: TCP
+        

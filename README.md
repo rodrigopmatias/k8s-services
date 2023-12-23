@@ -3,6 +3,7 @@
 Ao longo do tempo passe a acumular algum serviços que uso no meu dia a dia como develop, serviços básicos como database, mensageria entre outros que me ajuda a desenvolver sem precisar de infraestrutura externa, são eles até o monento:
 
 1. PostgreSQL
+1. MariaDB
 1. RabbitMQ
 1. Redis
 1. Docker Registry
@@ -200,6 +201,8 @@ redis   LoadBalancer   10.43.91.59   192.168.101.210   6379:32326/TCP   29s
 ```
 
 Sendo assim podemos acessar este redis da maquina de desenvolvimento com a seguinte URL `redis://192.168.101.210:6379/1`.
+
+## Implementando MariaDB
 
 ## Implementando PostgreSQL
 
