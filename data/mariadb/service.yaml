@@ -10,3 +10,16 @@ spec:
     port: 3306
     targetPort: 3306
   type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-metrics
+spec:
+  selector:
+    app: mariadb
+  ports:
+  - name: "metrics"
+    port: 9104
+    targetPort: 9104
+  type: ClusterIP

@@ -48,7 +48,10 @@ spec:
             - "exporter"
           env:
             - name: MYSQLD_EXPORTER_PASSWORD
-              value: secr3t
+              valueFrom:
+                secretKeyRef:
+                  key: MYSQLD_EXPORTER_PASSWORD
+                  name: mariadb-secrets
           resources:
             limits:
               memory: "128Mi"

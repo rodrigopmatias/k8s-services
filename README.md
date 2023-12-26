@@ -17,6 +17,7 @@ Para seguirmos com a implementação dos serviços sugiro a seguinte ordem:
 1. [Implementando o PyPI Server](#implementando-o-pypi-server)
 1. [Implementando os fixes](#implementado-os-fixes)
 1. [Implementando o Redis](#implementado-redis)
+1. [Implementando o MariaDB](#implementando-mariadb)
 1. [Implementando o PostgreSQL](#implementando-postgresql)
 1. [Implementnando o RabbitMQ](#implementando-o-rabbitmq)
 
