@@ -8,6 +8,10 @@ spec:
       app: mariadb
   template:
     metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: '9104'
+        prometheus.io/scrape: 'true'
       labels:
         app: mariadb
     spec:
