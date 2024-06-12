@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: customize
+data:
+  01-addusers.sql: |
+    GRANT ALL ON *.* TO 'jhon'@'%';
+    CREATE USER 'exporter'@'%' IDENTIFIED BY 'secr3t';
+    GRANT ALL ON *.* TO 'exporter'@'%';
+    GRANT SELECT ON performance_schema.* TO 'exporter'@'%';
