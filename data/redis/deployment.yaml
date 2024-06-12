@@ -17,8 +17,7 @@ spec:
       imagePullSecrets:
         - name: registry-secrets
       containers:
-        - image: registry.internal:5000/redis:7-bullseye
-        # - image: redis:7-alpine
+        - image: redis:7-alpine
           name: server
           ports:
             - containerPort: 6379
